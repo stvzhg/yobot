@@ -58,8 +58,8 @@ class Login:
     @staticmethod
     def match(cmd: str):
         cmd = cmd.split(' ')[0]
-        if cmd in ['登录', '登陆']:
-            return 1
+        # if cmd in ['登录', '登陆']:
+        #     return 1
         if cmd == '重置密码':
             return 3
         return 0
