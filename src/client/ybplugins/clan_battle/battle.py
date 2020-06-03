@@ -59,6 +59,8 @@ class ClanBattle:
         '查4': 24,
         '查5': 25,
         '合刀': 26,
+        '查合': 27,
+        '完成': 28,
     }
 
     Server = {
@@ -419,6 +421,13 @@ class ClanBattle:
             Clan_subscribe.subscribe_item == 0,
         ).execute()
 
+        # 如果当前正在合刀，则取消合刀
+        Clan_subscribe.delete().where(
+            Clan_subscribe.gid == group_id,
+            Clan_subscribe.qqid == qqid,
+            Clan_subscribe.subscribe_item == 6,
+        ).execute()
+
         challenge.save()
         group.save()
 
@@ -749,6 +758,8 @@ class ClanBattle:
         if subscribe is not None:
             if boss_num == 0:
                 raise UserError('您已经在树上了')
+            if boss_num == 6:
+                raise UserError('您已经参与了合刀')
             raise UserError('您已经预约过了')
         if (boss_num == 0 and group.challenging_member_qq_id == qqid):
             # 如果挂树时当前正在挑战，则取消挑战
@@ -1332,6 +1343,49 @@ class ClanBattle:
                 for m in subscribers
             )
             return reply
+        elif match_num == 26: # 合刀
+            match = re.match(r'^合刀 *(?:[\:：](.*))?$', cmd)
+            if not match:
+                return
+            extra_msg = match.group(1)
+            if isinstance(extra_msg, str):
+                extra_msg = extra_msg.strip()
+                if not extra_msg:
+                    extra_msg = None
+            msg = {}
+            if extra_msg:
+                msg['message'] = extra_msg
+            try:
+                self.add_subscribe(group_id, user_id, 6, msg)
+            except (GroupError, UserError) as e:
+                _logger.info('群聊 失败 {} {} {}'.format(user_id, group_id, cmd))
+                return str(e)
+            _logger.info('群聊 成功 {} {} {}'.format(user_id, group_id, cmd))
+            return '已加入合刀'
+        elif match_num == 27: # 查合
+            subscribers = self.get_subscribe_list(group_id, 6)
+            if not subscribers:
+                return '没有人正在参与合刀'
+            reply = '合刀的成员：\n' + '\n'.join(
+                self._get_nickname_by_qqid(m['qqid'])
+                + m.get('comment', {}).get('message', '')
+                for m in subscribers
+            )
+            return reply
+        elif match_num == 28: # 完成合刀
+            match = re.match(r'^完成合刀 *(?:[\:：](.*))?$', cmd)
+            if not match:
+                return
+            subscribers = self.get_subscribe_list(group_id, 6)
+            if not subscribers:
+                return '没有人正在参与合刀'
+            reply = '合刀的成员：\n' + '\n'.join(
+                self._get_nickname_by_qqid(m['qqid'])
+                + m.get('comment', {}).get('message', '')
+                for m in subscribers
+            )
+            return reply
+
 
     def register_routes(self, app: Quart):
 
