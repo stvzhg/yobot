@@ -128,6 +128,39 @@ class Gacha:
         db_conn.close()
         return reply
 
+    def chongqian(self, qqid: int, nickname: str) -> str:
+        # self.check_ver()  # no more updating
+        db_exists = os.path.exists(os.path.join(
+            self.setting["dirname"], "collections.db"))
+        db_conn = sqlite3.connect(os.path.join(
+            self.setting["dirname"], "collections.db"))
+        db = db_conn.cursor()
+        
+        today = time.strftime("%m%d")
+        sql_info = list(db.execute(
+            "SELECT colle,times,last_day,day_times FROM Colle WHERE qqid=?", (qqid,)))
+        mem_exists = (len(sql_info) == 1)
+        if mem_exists:
+            info = pickle.loads(sql_info[0][0])
+            times, last_day, day_times = sql_info[0][1:]
+        else:
+            info = {}
+            times, last_day, day_times = 0, "", 0
+        day_limit = self._pool["settings"]["day_limit"]
+        day_times = 0
+        reply = "" 
+        reply += "{}已经成功氪金，钱包受到暴击".format(nickname)
+        sql_info = pickle.dumps(info)
+        if mem_exists:
+            db.execute("UPDATE Colle SET colle=?, times=?, last_day=?, day_times=? WHERE qqid=?",
+                       (sql_info, times, last_day, day_times, qqid))
+        else:
+            db.execute("INSERT INTO Colle (qqid,colle,times,last_day,day_times) VALUES(?,?,?,?,?)",
+                       (qqid, sql_info, times, last_day, day_times))
+        db_conn.commit()
+        db_conn.close()
+        return reply
+
     @lru_cache(maxsize=256)
     def check_ssr(self, char):
         prop = 0.
@@ -302,6 +335,8 @@ class Gacha:
             return 5
         elif cmd == "抽一井" or cmd == "来一井":
             return 6
+        elif cmd == "氪金":
+            return 7
         else:
             return 0
 
@@ -339,6 +374,10 @@ class Gacha:
                 await self.bot_api.send_msg(**replymsg)
             asyncio.ensure_future(show_colle())
             reply = None
+        elif func_num == 7:
+            reply = self.chongqian(
+                qqid=msg["sender"]["user_id"],
+                nickname=msg["sender"]["card"])
         return {
             "reply": reply,
             "block": True
