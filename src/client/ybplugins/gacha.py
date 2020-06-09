@@ -147,7 +147,7 @@ class Gacha:
             info = {}
             times, last_day, day_times = 0, "", 0
         day_limit = self._pool["settings"]["day_limit"]
-        day_times = 0
+        day_times -= 30
         reply = "" 
         reply += "{}已经成功氪金，钱包受到暴击".format(nickname)
         sql_info = pickle.dumps(info)
