@@ -504,9 +504,9 @@ class ClanBattle:
     def delete_recommand_challenge(self, boss_id, msg, group_id: Groupid) -> str:
         
         Clan_recommand.delete().where(
-            Clan_recommand.gid = group_id,
-            Clan_recommand.bid = boss_id,
-            Clan_recommand.message = msg,
+            Clan_recommand.gid == group_id,
+            Clan_recommand.bid == boss_id,
+            Clan_recommand.message == msg,
         ).execute()
 
         reply = '成功删除推荐出刀\n'
