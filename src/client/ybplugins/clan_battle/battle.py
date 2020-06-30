@@ -496,9 +496,9 @@ class ClanBattle:
         )
 
         if created:
-            reply = '成功上传推荐出刀\n'
+            reply = '成功上传推荐出刀'
         else:  
-            reply = '上传失败\n'
+            reply = '上传失败'
         return reply
 
     def delete_recommand_challenge(self, boss_id, msg, group_id: Groupid) -> str:
@@ -509,7 +509,7 @@ class ClanBattle:
             Clan_recommand.message == msg,
         ).execute()
 
-        reply = '成功删除推荐出刀\n'
+        reply = '成功删除推荐出刀'
         return reply
 
     def recommand_challenge(self, group_id: Groupid, boss_id = -1) -> str:
@@ -524,9 +524,10 @@ class ClanBattle:
             Clan_recommand.damage.desc()
         ):
             recommand_list.append(recommand.message)
-
         reply = '\n'.join(recommand_list)
-        return reply
+        if not reply:
+            return "没有推荐出刀！快催会长摸轴！"
+        return "{}王的推荐出刀：/n".format(boss_id)+reply
 
     def undo(self, group_id: Groupid, qqid: QQid) -> BossStatus:
         """
@@ -1536,7 +1537,7 @@ class ClanBattle:
         elif match_num == 30: # 推荐出刀
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
             if not boss:
-                return self.recommand_challenge(-1, group_id)
+                return self.recommand_challenge(group_id, -1)
             return self.recommand_challenge(group_id, boss.group(1))
         elif match_num == 31: # 删除推荐出刀
             match = re.match(r'^删除推荐出刀.*王 (.*)$', cmd)
