@@ -1529,18 +1529,18 @@ class ClanBattle:
             )
             return reply
         elif match_num == 29: # 上传推荐出刀
-            match = re.match(r'^上传推荐出刀 *(?:[\:：](.*))?$', cmd)
+            match = re.match(r'^上传推荐出刀.*王 (.*)$', cmd)
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
             damage = re.match(r'^.* ([0-9]+)[万W].*$', cmd)
-            return self.upload_recommand_challenge(boss.group(1), damage.group(1), match.group(1))
+            return self.upload_recommand_challenge(boss.group(1), damage.group(1), match.group(1), group_id)
         elif match_num == 30: # 推荐出刀
-            match = re.match(r'^上传推荐出刀 *(?:[\:：](.*))?$', cmd)
+            match = re.match(r'^上传推荐出刀.*王 (.*)$', cmd)
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
-            return self.recommand_challenge(boss.group(1))
+            return self.recommand_challenge(boss.group(1), group_id)
         elif match_num == 31: # 删除推荐出刀
-            match = re.match(r'^上传推荐出刀 *(?:[\:：](.*))?$', cmd)
+            match = re.match(r'^上传推荐出刀.*王 (.*)$', cmd)
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
-            return self.delete_recommand_challenge(boss.group(1),match.group(1))
+            return self.delete_recommand_challenge(boss.group(1),match.group(1), group_id)
 
 
     def register_routes(self, app: Quart):
