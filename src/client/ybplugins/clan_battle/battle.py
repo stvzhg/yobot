@@ -512,7 +512,7 @@ class ClanBattle:
         reply = '成功删除推荐出刀\n'
         return reply
 
-    def recommand_challenge(self, boss_id = -1, group_id: Groupid) -> str:
+    def recommand_challenge(self, group_id: Groupid, boss_id = -1) -> str:
         if boss_id == -1:
             group = Clan_group.get_or_none(group_id=group_id)
             boss_id = group.boss_num
@@ -1537,7 +1537,7 @@ class ClanBattle:
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
             if not boss:
                 return self.recommand_challenge(-1, group_id)
-            return self.recommand_challenge(boss.group(1), group_id)
+            return self.recommand_challenge(group_id, boss.group(1))
         elif match_num == 31: # 删除推荐出刀
             match = re.match(r'^删除推荐出刀.*王 (.*)$', cmd)
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
