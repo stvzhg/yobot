@@ -527,7 +527,7 @@ class ClanBattle:
         reply = '\n'.join(recommand_list)
         if not reply:
             return "没有推荐出刀！快催会长摸轴！"
-        return "{}王的推荐出刀：/n".format(boss_id)+reply
+        return "{}王的推荐出刀：\n".format(boss_id)+reply
 
     def undo(self, group_id: Groupid, qqid: QQid) -> BossStatus:
         """
