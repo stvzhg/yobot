@@ -168,9 +168,6 @@ def init(sqlite_filename):
     else:
         old_version = int(DB_schema.get(key='version').value)
 
-    if not Clan_recommand.exists():
-        Clan_recommand.create_table()
-
     if not User.table_exists():
         Admin_key.create_table()
         User.create_table()
@@ -179,6 +176,7 @@ def init(sqlite_filename):
         Clan_member.create_table()
         Clan_challenge.create_table()
         Clan_subscribe.create_table()
+        Clan_recommand.create_table()
         Character.create_table()
         User_box.create_table()
         old_version = _version

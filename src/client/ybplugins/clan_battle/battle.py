@@ -512,13 +512,13 @@ class ClanBattle:
         reply = '成功删除推荐出刀\n'
         return reply
 
-    def recommand_challenge(self, group_id: Groupid, boss_id = -1,) -> str:
+    def recommand_challenge(self, boss_id = -1, group_id: Groupid) -> str:
         if boss_id == -1:
             group = Clan_group.get_or_none(group_id=group_id)
             boss_id = group.boss_num
         recommand_list = []
         query = [Clan_recommand.gid == group_id, Clan_recommand.bid == boss_id]
-        for recommand in Clan_subscribe.select().where(
+        for recommand in Clan_recommand.select().where(
             *query
         ).order_by(
             Clan_recommand.damage
@@ -1534,11 +1534,12 @@ class ClanBattle:
             damage = re.match(r'^.* ([0-9]+)[万W].*$', cmd)
             return self.upload_recommand_challenge(boss.group(1), damage.group(1), match.group(1), group_id)
         elif match_num == 30: # 推荐出刀
-            match = re.match(r'^上传推荐出刀.*王 (.*)$', cmd)
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
+            if not boss:
+                return self.recommand_challenge(-1, group_id)
             return self.recommand_challenge(boss.group(1), group_id)
         elif match_num == 31: # 删除推荐出刀
-            match = re.match(r'^上传推荐出刀.*王 (.*)$', cmd)
+            match = re.match(r'^删除推荐出刀.*王 (.*)$', cmd)
             boss = re.match(r'^.* ([1-5])[王].*$', cmd)
             return self.delete_recommand_challenge(boss.group(1),match.group(1), group_id)
 
