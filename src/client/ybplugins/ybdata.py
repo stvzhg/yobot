@@ -114,6 +114,15 @@ class Clan_subscribe(_BaseModel):
             (('gid', 'qqid', 'subscribe_item'), False),
         )
 
+class Clan_recommand(_BaseModel):
+    gid = BigIntegerField()
+    bid = IntegerField()
+    damage = IntegerField()
+    message = TextField()
+
+    class Meta:
+        primary_key = CompositeKey('message', 'bid')
+
 
 class Character(_BaseModel):
     chid = IntegerField(primary_key=True)

@@ -16,7 +16,7 @@ from quart import (Quart, jsonify, make_response, redirect, request, session,
 from ..templating import render_template
 from ..web_util import async_cached_func
 from ..ybdata import (Clan_challenge, Clan_group, Clan_member, Clan_subscribe,
-                      User)
+                      User, Clan_recommand)
 from .exception import (
     ClanBattleError, GroupError, GroupNotExist, InputError, UserError,
     UserNotInGroup)
@@ -63,6 +63,9 @@ class ClanBattle:
         '合刀': 26,
         '查合': 27,
         '完成': 28,
+        '上传': 29,
+        '推荐': 30,
+        '删除': 31,
     }
 
     Server = {
@@ -482,6 +485,48 @@ class ClanBattle:
             self.notify_subscribe(group_id, group.boss_num)
 
         return status
+
+    def upload_recommand_challenge(self, boss_id, damage, msg, group_id: Groupid) -> str:
+
+        _, created = Clan_recommand.get_or_create(
+            gid = group_id,
+            bid = boss_id,
+            damage = damage,
+            message = msg,
+        )
+
+        if created:
+            reply = '成功上传推荐出刀\n'
+        else:  
+            reply = '上传失败\n'
+        return reply
+
+    def delete_recommand_challenge(self, boss_id, msg, group_id: Groupid) -> str:
+        
+        Clan_recommand.delete().where(
+            gid = group_id,
+            bid = boss_id,
+            message = msg,
+        ).execute()
+
+        reply = '成功删除推荐出刀\n'
+        return reply
+
+    def recommand_challenge(self, group_id: Groupid, boss_id = -1,) -> str:
+        if boss_id == -1:
+            group = Clan_group.get_or_none(group_id=group_id)
+            boss_id = group.boss_num
+        recommand_list = []
+        query = [Clan_recommand.gid == group_id, Clan_recommand.bid == boss_id]
+        for recommand in Clan_subscribe.select().where(
+            *query
+        ).order_by(
+            Clan_recommand.damage
+        ):
+            recommand_list.append(recommand.message)
+
+        reply = '\n'.join(recommand_list)
+        return reply
 
     def undo(self, group_id: Groupid, qqid: QQid) -> BossStatus:
         """
@@ -1483,6 +1528,19 @@ class ClanBattle:
                 for m in subscribers
             )
             return reply
+        elif match_num == 29: # 上传推荐出刀
+            match = re.match(r'^上传推荐出刀 *(?:[\:：](.*))?$', cmd)
+            boss = re.match(r'^.* ([1-5])[王].*$', cmd)
+            damage = re.match(r'^.* ([0-9]+)[万W].*$', cmd)
+            return self.upload_recommand_challenge(boss.group(1), damage.group(1), match.group(1))
+        elif match_num == 30: # 推荐出刀
+            match = re.match(r'^上传推荐出刀 *(?:[\:：](.*))?$', cmd)
+            boss = re.match(r'^.* ([1-5])[王].*$', cmd)
+            return self.recommand_challenge(boss.group(1))
+        elif match_num == 31: # 删除推荐出刀
+            match = re.match(r'^上传推荐出刀 *(?:[\:：](.*))?$', cmd)
+            boss = re.match(r'^.* ([1-5])[王].*$', cmd)
+            return self.delete_recommand_challenge(boss.group(1),match.group(1))
 
 
     def register_routes(self, app: Quart):
